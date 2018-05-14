@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Genealogy</title>
+	<meta charset="utf-8"/>
+    <!--meta http-equiv="refresh" content="10"-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        .top {
+            position: fixed;
+			left: -1px;
+            right: -1px;
+		    top: 0px;
+		    height: 155px; /*In Safari, this isn't tall enough. Header table coming out bottom.*/
+            padding-left: 10px;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #d6d6d6;
+			font-family: sans-serif;
+        }
+        .main {
+			position: absolute;
+            z-index: -1;
+			left: -1px;
+            right: -1px;
+		    top: 200px;
+            padding-left: 10px;
+            /*border: 1px solid #d6d6d6;*/
+			font-family: sans-serif;
+            font-size: 1.2em;
+        }
+        .anchor{
+            display: block;
+            height: 166px; /*same height as header*/
+            margin-top: -166px; /*same height as header*/
+            visibility: hidden;
+        }
+        table {
+            border-collapse: collapse;
+
+        }
+        tr:nth-child(even) {
+
+            border-top: 1px solid #d6d6d6;
+            border-bottom: 1px solid #d6d6d6;
+        }
+        tr:nth-child(odd) {
+            background-color: #f5f5f5;
+        }
+        th {
+            /*border: 1px solid grey;*/
+            text-align: left;
+        }
+        td {
+            /*border: 1px solid grey;*/
+            padding-top: 15px;
+            padding-bottom: 15px;
+            font-family: monospace;
+        }
+        .First {
+            width: 120px;
+        }
+        .Second {
+            width: 109px;
+        }
+        .Family {
+            width: 100px;
+        }
+        .Date {
+            width: 95px;
+        }
+        .Place {
+            width: 130px;
+        }
+        .Parent {
+            width: 188px;
+        }
+        .Share {
+            width: 25px;
+        }
+        .mention {
+            position: relative;
+            display: inline-block;
+            /*border-bottom: 1px dotted black;*/
+        }
+        .mention .mentiontext {
+            visibility: hidden;
+            width: 500px;
+            background-color: black;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+
+            /* Position the mention */
+            position: absolute;
+            z-index: 2;
+            top: 40px;
+            left: 0px;
+        }
+        .mention:hover .mentiontext {
+            visibility: visible;
+        }
+        .contrib {
+            position: relative;
+            display: inline-block;
+            /*border-bottom: 1px dotted black;*/
+        }
+        .contrib .contribtext {
+            visibility: hidden;
+            width: 175px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 2px 1px 2px 1px;
+
+            /* Position the mention */
+            position: absolute;
+            z-index: 2;
+            top: 20px;
+            left: -175px;
+        }
+        .contrib:hover .contribtext {
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <h1>Genealogy</h1>
+        <p>Data for Alhawsawi, Coyne, Denney, and Oberlin families<br/>
+        <a href="genealogy - persons.csv" target="_blank">raw data</a> (csv) | <a href="map.html" target="_blank">map view</a></p>
+        <table>
+            <tr class="header">
+                <th class='First'>First</th>
+                <th class='Second'>Second</th>
+                <th class='Family'>Family</th>
+                <th class='Date'>Birth</th>
+                <th class='Place'>Place</th>
+                <th class='Date'>Death</th>
+                <th class='Place'>Place</th>
+                <th class='Parent'>Mother</th>
+                <th class='Parent'>Father</th>
+                <th class='Share'></th>
+            </tr>
+        </table>
+    </div>
+    <div class="main">
+        <div id="output"/>
+    </div>
+</body>
+</html>
+<script>
+$(document).ready(callFile);
+function callFile() {
+    $.ajax({
+        type: "GET",
+        url: "genealogy - persons.csv",
+        dataType: "text",
+        success: function(data) {
+            var matrix = CSVToMatrix(data);
+            var table = buildTable(matrix);
+            $('#output').html(table);
+        }
+    })
+}
+// Take CSV text, turn into matrix (embedded array)
+function CSVToMatrix(data) {
+    var dataLines = data.split(/\r\n|\n/);
+    var matrix = [];
+    dataLines.forEach(line => {
+        if (line.indexOf(',\"') > -1) {
+            var split1 = line.split(',\"');
+            var record = split1[0].split(',');
+            record.push(split1[1]);
+        }
+        else {
+            var record = line.split(',');
+        }
+        record.forEach(field => {
+            if (field.indexOf('\"') > -1) {
+                var fieldX = record.indexOf(field);
+                record[fieldX] = field.replace('\"', '');
+            }
+        })
+        matrix.push(record);
+    })
+    return matrix;
+}
+// Build table
+// !! Hey, try adding in in-page links for each person, connecting parents
+function buildTable(matrix) {
+    var table = '<table>'
+    matrix.forEach(record => {
+        if (matrix.indexOf(record) != 0) {
+            table += "<tr>"
+            var personID = record[matrix[0].indexOf('PersonID')];
+            // Try add onClick icon by name, alert(Mention)
+            if (record[matrix[0].indexOf('Mention')] != '') {
+                table += "<td class='First'><a class='anchor' name='"+
+                    personID+"'/>"+
+                    record[matrix[0].indexOf('FirstName')]+
+                    "<span class='mention'><img src='img/info.png' width='20px'>"+
+                    "<span class='mentiontext'>"+record[matrix[0].indexOf('Mention')]+
+                    "</span></span></td>"
+            }
+            else {
+                table += "<td class='First'><a class='anchor' name='"+
+                    personID+"'/>"+
+                    record[matrix[0].indexOf('FirstName')]+
+                    record[matrix[0].indexOf('Mention')]+
+                    "</td>"
+            }
+            table += "<td class='Second'>"+record[matrix[0].indexOf('SecName')]+
+                "</td>"
+            table += "<td class='Family'>"+record[matrix[0].indexOf('FamName')]+"</td>"
+            table += "<td class='Date'>"+record[matrix[0].indexOf('DOB')]+"</td>"
+            var latDx = matrix[0].indexOf('BLat')
+            var lonDx = matrix[0].indexOf('BLon')
+            table += "<td class='Place'><a href='https://www.google.com/maps/search/?api=1&query="+record[latDx]+","+record[lonDx]+"' target='_blank'>"+record[matrix[0].indexOf('BPlace')]+"</a></td>"
+            table += "<td class='Date'>"+record[matrix[0].indexOf('DOD')]+"</td>"
+            var latDx = matrix[0].indexOf('DLat')
+            var lonDx = matrix[0].indexOf('DLon')
+            table += "<td class='Place'><a href='https://www.google.com/maps/search/?api=1&query="+record[latDx]+","+record[lonDx]+"' target='_blank'>"+record[matrix[0].indexOf('D/BurPlace')]+"</a></td>"
+            var parentID = record[matrix[0].indexOf('Mother')];
+            if (parentID != '') {
+                matrix.forEach(rec => {
+                    if (rec[matrix[0].indexOf('PersonID')] == parentID) {
+                        table += "<td class='Parent'><a href='#" +
+                            parentID + "'>" +
+                            rec[matrix[0].indexOf('FirstName')] + " " +
+                            rec[matrix[0].indexOf('FamName')] + "</a></td>"
+                    }
+                })
+                // or use matrix.some?, because this forEach, if the data has multiple unique IDs (it shouldnt), it's going to fck the td's
+                // arr equals some array
+                //arr.some(function (value, index, _arr) {
+                //  console.log(index + ": " + value);
+                //  return value === "Pokhara";
+                //});
+            }
+            else {
+                table += "<td class='Parent'></td>"
+            }
+            var parentID = record[matrix[0].indexOf('Father')];
+            if (parentID != '') {
+                matrix.forEach(rec => {
+                    if (rec[matrix[0].indexOf('PersonID')] == parentID) {
+                        table += "<td class='Parent'><a href='#" +
+                            parentID + "'>" +
+                            rec[matrix[0].indexOf('FirstName')] + " " +
+                            rec[matrix[0].indexOf('FamName')] + "</a></td>"
+                    }
+                })
+            }
+            else {
+                table += "<td class='Parent'></td>"
+            }
+            table += "<td><span class='contrib'><a href='mailto:oberljn@gmail.com?Subject=Update%20for%20"+
+                record[matrix[0].indexOf('FirstName')] +
+                "%20(" +
+                record[matrix[0].indexOf('PersonID')] +
+                ")'><img src='img/contrib.png' width='15px'></a><span class='contribtext'>Contribute info</span></span></td>"
+            table += '</tr>'
+        }
+    })
+    table += '</table>'
+    return table
+}
+</script>
