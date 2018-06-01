@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Surname Origins</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+        var locations = [
+            
+			[53.696345,-9.278074,"Coyne (Gaelic)"],
+			[52.561911,-1.774858,"Denney (English)"],
+			[48.537778,9.041111,"Cutsinger (Possibly from Grötzinger, German and Ashkenazi Jewish)"],
+			[48.572678, 7.754042,"Oberlin (Alemannic German)"],
+			[52.561911,-1.154858,"Shilling (Anglo-Saxon)"],
+			[53.825564,-2.421976,"Watts (English and Scottish)"]
+
+        ]
+        function initMap() {
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 5.65,
+                center: {lat: 51.8, lng: 0.38}
+            });
+            for (i=0; i<locations.length; i++) {
+                var marker = new google.maps.Marker({
+                    position: {lat: locations[i][0], lng: locations[i][1]},
+                    map: map,
+					title: locations[i][2]
+                });
+            }
+        }
+        </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDP5ECOcGMBl1vp1JR2B00y4pS9YM0WpTs&callback=initMap"
+    async defer></script>
+  </body>
+</html>
